@@ -160,7 +160,19 @@ module.exports = class Autolevel {
     }
   }
 
+  checkContext(context) {
+    if (context.source !== 'feeder') {
+      this.sckw.sendGcode('(AL: wrong context, use macro)');
+      return false;
+    }
+    return true;
+  }
+
   reapply(cmd, context) {
+    if (!this.checkContext(context)) {
+      return;
+    }
+
     if (!this.gcode) {
       this.sckw.sendGcode('(AL: no gcode loaded)')
       return
@@ -174,6 +186,9 @@ module.exports = class Autolevel {
 
   start(cmd, context) {
     console.log(cmd, context)
+    if (!this.checkContext(context)) {
+      return;
+    }
 
     // A parameter of P1 indicates a "probe only", and that
     // the results should NOT be applied to any loaded GCode.
@@ -259,6 +274,7 @@ module.exports = class Autolevel {
 
     let dx = (xmax - xmin) / parseInt((xmax - xmin) / this.delta)
     let dy = (ymax - ymin) / parseInt((ymax - ymin) / this.delta)
+    console.log(`dy(${dy}) = (ymax(${ymax}) - ymin(${ymin})) / ((ymax(${ymax}) - ymin(${ymin})) / this.delta(${this.delta})) (${((ymax - ymin) / this.delta)})`);
     code.push('(AL: probing initial point)')
     code.push(`G21`)
     code.push(`G90`)
@@ -280,6 +296,7 @@ module.exports = class Autolevel {
       while (x < xmax - 0.01) {
         x += dx
         if (x > xmax) x = xmax
+        console.log(`${x} ${y}`)
         code.push(`(AL: probing point ${this.planedPointCount + 1})`)
         code.push(`G90 G0 X${x.toFixed(3)} Y${y.toFixed(3)} Z${this.height}`)
         code.push(`G38.2 Z-${this.height + 1} F${this.feed}`)
@@ -436,7 +453,7 @@ module.exports = class Autolevel {
 
     let points = this.getThreeClosestPoints(pt_mm)
     if (points.length < 3) {
-      console.log('Cant find 3 closest points')
+      //console.log('Cant find 3 closest points')
       return pt_in_or_mm
     }
     let normal = this.crossProduct3(this.sub3(points[1], points[0]), this.sub3(points[2], points[0]))
