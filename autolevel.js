@@ -272,9 +272,8 @@ module.exports = class Autolevel {
       ymax = context.ymax - margin;
     }
 
-    let dx = (xmax - xmin) / parseInt((xmax - xmin) / this.delta)
-    let dy = (ymax - ymin) / parseInt((ymax - ymin) / this.delta)
-    console.log(`dy(${dy}) = (ymax(${ymax}) - ymin(${ymin})) / ((ymax(${ymax}) - ymin(${ymin})) / this.delta(${this.delta})) (${((ymax - ymin) / this.delta)})`);
+    let dx = (xmax - xmin) / ((xmax - xmin) / this.delta)
+    let dy = (ymax - ymin) / ((ymax - ymin) / this.delta)
     code.push('(AL: probing initial point)')
     code.push(`G21`)
     code.push(`G90`)
@@ -296,7 +295,6 @@ module.exports = class Autolevel {
       while (x < xmax - 0.01) {
         x += dx
         if (x > xmax) x = xmax
-        console.log(`${x} ${y}`)
         code.push(`(AL: probing point ${this.planedPointCount + 1})`)
         code.push(`G90 G0 X${x.toFixed(3)} Y${y.toFixed(3)} Z${this.height}`)
         code.push(`G38.2 Z-${this.height + 1} F${this.feed}`)
@@ -453,7 +451,7 @@ module.exports = class Autolevel {
 
     let points = this.getThreeClosestPoints(pt_mm)
     if (points.length < 3) {
-      //console.log('Cant find 3 closest points')
+      console.log('Cant find 3 closest points')
       return pt_in_or_mm
     }
     let normal = this.crossProduct3(this.sub3(points[1], points[0]), this.sub3(points[2], points[0]))
